@@ -1,0 +1,237 @@
+/* ============================================================
+   移出自 css/site.css —— 2026-09-21，"hero 改成整屏 ParticleText" 那次
+   改动。对应的 HTML 片段在同目录 removed-sections.html。
+
+   这些规则原样保留（没有跟着新布局改），贴回 site.css 时要连
+   removed-sections.html 的 DOM 一起放回去，两边是配套的。
+   ============================================================ */
+
+/* 图片加载完成前的遮罩。main.js 的 preloadImages()/reveal() 负责摘掉
+   <body> 上的 is-loading 类；main.js 本身也在 _archive/main.js，
+   要恢复这个遮罩就要把 main.js 和它的四个第三方库一起接回
+   index.html（imagesloaded / lenis / gsap / ScrollTrigger）。 */
+@media (scripting: enabled) {
+  .is-loading::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: var(--color-bg);
+  }
+}
+
+/* 跳过导航 —— 键盘用户和读屏器。href="#work" 指向下面 Selected work 区块 */
+.skip-link {
+  position: absolute;
+  left: var(--page-padding);
+  top: -100%;
+  z-index: 10001;
+  padding: 0.6rem 1rem;
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: 0;
+  border-radius: 4px;
+}
+.skip-link:focus { top: var(--page-padding); }
+
+/* --------------------------------------------------------------------------
+   旧版 ParticleText 舞台：只包住 h1，不铺满整个 header。
+   整屏版改成铺满 .site-header 本身了，见 site.css 里的新规则。
+   这条规则如果以后要恢复成"只占标题那一小块"的布局，把它贴回去，
+   同时把 particle-text-init.js 的 fontSize 调回
+   clamp(3rem, 12vw, 8rem) 那一档。
+   -------------------------------------------------------------------------- */
+.site-header__name-stage {
+  position: relative;
+  min-height: clamp(4.4rem, 14vw, 9.6rem);
+  display: flex;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   header 里除 h1 之外的内容：identity 分组、role/bio、导航、数字块
+   -------------------------------------------------------------------------- */
+
+.site-header__identity,
+.site-nav,
+.site-header__stats {
+  position: relative;
+  z-index: 2;
+}
+
+.site-header__identity { display: grid; gap: 0.75rem; }
+
+.site-header__role {
+  color: var(--color-muted);
+  font-size: var(--step-1);
+  font-weight: var(--weight-body);
+}
+
+.site-header__bio { color: var(--color-muted); }
+
+.site-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.site-header__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  margin: 0;
+  padding-top: 0.5rem;
+}
+.site-header__stats > div { display: grid; gap: 0.2rem; }
+.site-header__stats dt { color: var(--color-muted); }
+.site-header__stats dd { margin: 0; font-size: var(--step-1); }
+
+/* --------------------------------------------------------------------------
+   作品列表 —— <main> 里 #work 和 #type 两个 section 用到的全部规则
+   -------------------------------------------------------------------------- */
+
+.work { padding-block: 12vh 18vh; }
+
+.work__intro {
+  padding-inline: var(--page-padding);
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 8vh;
+}
+.work__intro p { color: var(--color-muted); }
+
+.projects {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6vh;
+}
+
+.project {
+  width: var(--card-width);
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* 透视容器：main.js 只旋转它内部的 .project__media */
+.project__stage { perspective: 900px; }
+
+.project__media {
+  margin: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.project__media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--card-ar);
+  object-fit: cover;
+  background-color: #1d1d1d;
+}
+
+.project__meta { display: grid; gap: 0.6rem; }
+
+.project__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.project__ornament {
+  color: var(--color-accent);
+  font-weight: var(--weight-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--step--1);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.project__summary { color: var(--color-muted); }
+
+.project__facts {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 2rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--color-line);
+}
+.project__facts > div { display: flex; gap: 0.5rem; align-items: baseline; }
+.project__facts dt { color: var(--color-muted); font-size: var(--step--1); }
+.project__facts dd { margin: 0; font-size: var(--step--1); }
+
+/* 用到的 tokens（现在 :root 里已经删了，恢复作品墙时要连这两个一起加回
+   css/site.css 的 :root）：
+   --card-width: min(600px, 86vw);
+   --card-ar: 14 / 9;
+*/
+
+/* --------------------------------------------------------------------------
+   背景跑马灯 —— 纯装饰，跟内容无关，可以独立恢复
+   -------------------------------------------------------------------------- */
+
+.marquee {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  width: 100vw;
+  transform: translateY(-50%);
+  z-index: 1;
+  overflow: hidden;
+  mix-blend-mode: plus-lighter;
+  pointer-events: none;
+  user-select: none;
+}
+
+.marquee__inner {
+  display: flex;
+  gap: 3rem;
+  width: max-content;
+  will-change: transform;
+}
+
+.marquee__inner span {
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  font-size: clamp(2rem, 16vw, 8rem);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   页脚里 Contact 标题 + 联系方式列表（colophon 本身还在 site.css 里）
+   -------------------------------------------------------------------------- */
+
+.site-footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   动效偏好里跟以上这些元素相关的部分（这次改动前 site.css 的完整版本）：
+
+   @media (prefers-reduced-motion: reduce) {
+     html { scroll-behavior: auto; }
+     .project__media { transform: none !important; }
+     .marquee { display: none; }
+     .site-header__rings { display: none; }
+   }
+
+   .site-header__rings 那条属于 MagicRings（另见 _archive/magic-rings/），
+   跟这次的作品墙/跑马灯不是一回事，一并记在这里方便对照。
+   -------------------------------------------------------------------------- */

@@ -1,0 +1,412 @@
+<!--
+  移出自 index.html —— 2026-09-21，"hero 改成整屏 ParticleText" 那次改动。
+
+  这次改动把首页收成单屏：只留 <h1 class="site-header__name"> 给
+  ParticleText 用。下面这些片段当时在 index.html 里，原样剪过来，
+  以后要恢复内容（作品墙、字体样张、联系方式）时直接贴回去。
+
+  对应的 CSS 在同目录 removed-sections.css。
+  被移除的 JSON-LD 节点（ItemList + 10 个 CreativeWork）在
+  _archive/json-ld-removed.json。
+
+  贴回去时注意：
+  - skip-link 的 href="#work" 指向下面 <section id="work">，两个要一起放回。
+  - site-header__stats 里的数字（41 个项目、30 家工厂）跟 JSON-LD 里
+    Person 节点没有直接关联，可以独立恢复。
+  - .marquee 是纯装饰跑马灯，跟内容无关，可以独立恢复或者不恢复。
+-->
+
+<!-- ============================================================
+     skip-link（原来在 <body> 最前面，紧跟着 <a class="skip-link">
+     之前是 marquee）
+     ============================================================ -->
+<a class="skip-link" href="#work">Skip to selected work</a>
+
+<!-- ============================================================
+     背景跑马灯（原来在 skip-link 之后，header 之前）
+     ============================================================ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__inner">
+    <span>Interfaces</span> <span>/</span>
+    <span>Automation</span> <span>/</span>
+    <span>Machine Vision</span> <span>/</span>
+    <span>Design Systems</span> <span>/</span>
+    <span>Interfaces</span> <span>/</span>
+    <span>Automation</span> <span>/</span>
+    <span>Machine Vision</span> <span>/</span>
+    <span>Design Systems</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     header 里 h1 之外的东西（role、bio、导航、三个数字块）
+     原来的结构是：
+
+     <div class="site-header__identity">
+       <div class="site-header__name-stage">
+         <h1 class="site-header__name">Feiping Liu</h1>       ← 这行还在 index.html 里，没动
+         <div class="site-header__particle-text" ...></div>   ← 这个也还在，位置变了（见 site.css）
+       </div>
+       <p class="site-header__role">...</p>                    ← 下面这段是 role
+       <p class="site-header__bio">...</p>                      ← 下面这段是 bio
+     </div>
+     <nav class="site-nav">...</nav>                            ← 下面这段是导航
+     <dl class="site-header__stats">...</dl>                    ← 下面这段是数字块
+
+     恢复时把 role/bio 两个 <p> 放回 site-header__identity 里、
+     h1 和 particle-text 之后；nav 和 dl 放回 site-header__identity
+     的外面、header 里面。
+     ============================================================ -->
+
+<p class="site-header__role">Product Designer — industrial automation and machine-vision interfaces</p>
+<p class="site-header__bio">
+  I design the software that people use to run inspection lines: review consoles,
+  calibration flows, and the dashboards that tell a plant manager what went wrong at
+  <time datetime="03:00">3am</time>. Based in Shanghai, working in English and Mandarin.
+</p>
+
+<nav class="site-nav" aria-label="Primary">
+  <ul>
+    <li><a href="#work">Selected work</a></li>
+    <li><a href="#type">Typography</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- 数字用 600 字重 + tabular-nums，这是字体规范里的第三档 -->
+<dl class="site-header__stats">
+  <div>
+    <dt class="t-caps">Practising since</dt>
+    <dd><time class="num" datetime="2019">2019</time></dd>
+  </div>
+  <div>
+    <dt class="t-caps">Shipped projects</dt>
+    <dd><span class="num">41</span></dd>
+  </div>
+  <div>
+    <dt class="t-caps">Plants deployed in</dt>
+    <dd><span class="num">30</span></dd>
+  </div>
+</dl>
+
+<!-- ============================================================
+     <main> 整块 —— Selected work（十个项目）+ Typography 字体样张
+     原来紧跟在 </header> 之后
+     ============================================================ -->
+<main>
+  <section class="work" id="work" aria-labelledby="work-title">
+    <div class="work__intro">
+      <h2 id="work-title">Selected work</h2>
+      <p>
+        Ten projects, newest first. Each one lists my actual role, because
+        &ldquo;designed by&rdquo; on a team of nine means very little on its own.
+      </p>
+    </div>
+
+    <!-- ol 而不是 div：顺序本身是信息（按时间倒序） -->
+    <ol class="projects" role="list">
+
+      <li>
+        <article class="project" aria-labelledby="project-01-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/01.webp" width="1400" height="900" loading="eager" decoding="async"
+                alt="Defect review console showing a captured part image beside a list of flagged defect regions, each with a confirm and reject control." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <!-- 装饰性编号，机器读不到 -->
+              <span class="project__ornament" aria-hidden="true">Art. 01</span>
+              <h3 class="project__title" id="project-01-title">Aperture — Defect Review Console</h3>
+            </div>
+            <p class="project__summary">
+              A review console that lets quality engineers confirm or reject machine-vision
+              defect calls in under three seconds.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Lead product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2026">2026</time></dd></div>
+              <div><dt>Field</dt><dd>Manufacturing quality inspection</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-02-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/02.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Production line dashboard with a horizontal station timeline and a bar chart ranking throughput loss by station." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 02</span>
+              <h3 class="project__title" id="project-02-title">Cadence — Line Throughput Dashboard</h3>
+            </div>
+            <p class="project__summary">
+              A production-line dashboard that surfaces throughput loss by station rather than by shift.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Product designer, data visualisation</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2025">2025</time></dd></div>
+              <div><dt>Field</dt><dd>Production line analytics</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-03-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/03.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Step-by-step camera calibration screen showing a live preview, a target pattern overlay, and a progress indicator for six cameras." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 03</span>
+              <h3 class="project__title" id="project-03-title">Halide — Camera Calibration Flow</h3>
+            </div>
+            <p class="project__summary">
+              A guided calibration flow that cut average setup time for a six-camera inspection cell
+              from <span class="num num--inline">40</span> minutes to <span class="num num--inline">11</span>.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Lead product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2025">2025</time></dd></div>
+              <div><dt>Field</dt><dd>Machine vision hardware calibration</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-04-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/04.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Traceability record viewer showing a single part's inspection history as a vertical timeline linked to stored camera images." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 04</span>
+              <h3 class="project__title" id="project-04-title">Ledger — Traceability Record Viewer</h3>
+            </div>
+            <p class="project__summary">
+              A per-unit traceability viewer that makes every inspection decision auditable back to the raw image.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2024">2024</time></dd></div>
+              <div><dt>Field</dt><dd>Manufacturing traceability and audit</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-05-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/05.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Night-shift alert triage screen grouping correlated machine faults into a single incident card with a suggested first action." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 05</span>
+              <h3 class="project__title" id="project-05-title">Signal — Alert Triage for Night Shift</h3>
+            </div>
+            <p class="project__summary">
+              An alert model that groups correlated machine faults so a single operator can cover
+              <span class="num num--inline">4</span> cells overnight.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2024">2024</time></dd></div>
+              <div><dt>Field</dt><dd>Industrial alerting and triage</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-06-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/06.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Design system documentation page showing a type scale specimen, a dense data table component, and a colour palette tested for factory lighting." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 06</span>
+              <h3 class="project__title" id="project-06-title">Basis — Interface Design System</h3>
+            </div>
+            <p class="project__summary">
+              A design system for control-room software: dense data tables, colour that survives a
+              factory floor, and a type scale built on three weights.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Design system lead</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2023">2023</time></dd></div>
+              <div><dt>Field</dt><dd>Design systems for industrial software</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-07-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/07.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Model performance monitor plotting inspection accuracy over time with a highlighted drift window and a plain-language explanation panel." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 07</span>
+              <h3 class="project__title" id="project-07-title">Drift — Model Performance Monitor</h3>
+            </div>
+            <p class="project__summary">
+              A monitoring view that tells a non-ML engineer when an inspection model has started to
+              drift, and what to do next.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2023">2023</time></dd></div>
+              <div><dt>Field</dt><dd>Machine learning model monitoring</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-08-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/08.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Annotation tool showing a part photograph with polygon defect outlines and a simplified label picker sized for touch input." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 08</span>
+              <h3 class="project__title" id="project-08-title">Bench — Annotation Tooling</h3>
+            </div>
+            <p class="project__summary">
+              An annotation tool designed around the reality that the people labelling defects are the
+              people who make the parts.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2022">2022</time></dd></div>
+              <div><dt>Field</dt><dd>Training data annotation tooling</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-09-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/09.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Multi-site deployment console listing thirty plants with per-site configuration version and rollout status indicators." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 09</span>
+              <h3 class="project__title" id="project-09-title">Relay — Multi-Site Deployment Console</h3>
+            </div>
+            <p class="project__summary">
+              A console for rolling an inspection configuration out to <span class="num num--inline">30</span>
+              plants without a phone call to each one.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Product designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2021">2021</time></dd></div>
+              <div><dt>Field</dt><dd>Multi-site software deployment</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+      <li>
+        <article class="project" aria-labelledby="project-10-title">
+          <div class="project__stage">
+            <figure class="project__media">
+              <img src="assets/10.webp" width="1400" height="900" loading="lazy" decoding="async"
+                alt="Touchscreen operator interface mounted at an inspection station, showing a pass or fail result and a single large acknowledge button." />
+            </figure>
+          </div>
+          <div class="project__meta">
+            <div class="project__head">
+              <span class="project__ornament" aria-hidden="true">Art. 10</span>
+              <h3 class="project__title" id="project-10-title">Origin — First Operator Interface</h3>
+            </div>
+            <p class="project__summary">
+              The first shipped operator interface for a vision inspection station, built with
+              <span class="num num--inline">2</span> engineers in <span class="num num--inline">11</span> weeks.
+            </p>
+            <dl class="project__facts">
+              <div><dt>Role</dt><dd>Sole designer</dd></div>
+              <div><dt>Year</dt><dd><time class="num" datetime="2019">2019</time></dd></div>
+              <div><dt>Field</dt><dd>Operator interface design</dd></div>
+            </dl>
+          </div>
+        </article>
+      </li>
+
+    </ol>
+  </section>
+
+  <!-- ====================================================================
+       字体规范样张
+       ==================================================================== -->
+  <section class="work" id="type" aria-labelledby="type-title">
+    <div class="work__intro">
+      <h2 id="type-title">Typography</h2>
+      <p>
+        Latin and numerals are set in Inter; Chinese falls through to HarmonyOS Sans SC.
+        Three weights only: <span class="num num--inline">400</span> body,
+        <span class="num num--inline">500</span> headings,
+        <span class="num num--inline">600</span> numeric emphasis.
+      </p>
+    </div>
+
+    <div class="work__intro">
+      <h3>Inter — Latin</h3>
+      <p style="font-weight: 400">400 · Body copy. The quick brown fox jumps over the lazy dog.</p>
+      <p style="font-weight: 500">500 · Headings. The quick brown fox jumps over the lazy dog.</p>
+      <p class="num" style="font-size: var(--step-2)">600 · 0123456789 · 2026 · 41 · 30</p>
+
+      <h3 lang="zh-Hans" style="margin-top: 2rem">HarmonyOS Sans SC — 中文</h3>
+      <p lang="zh-Hans" style="font-weight: 400">400 · 正文字重。设计的意义要在没有视觉层级的情况下依然成立。</p>
+      <p lang="zh-Hans" style="font-weight: 500">500 · 标题字重。设计的意义要在没有视觉层级的情况下依然成立。</p>
+      <p lang="zh-Hans" style="font-weight: 700">700 · 中文没有 600 字重，向上取 Bold。</p>
+      <p lang="zh-Hans" style="margin-top: 1rem">
+        中英混排：2026 年交付了 <span class="num num--inline">41</span> 个项目，
+        部署在 <span class="num num--inline">30</span> 家工厂 —— 数字走 Inter，汉字走 HarmonyOS Sans SC。
+      </p>
+    </div>
+  </section>
+</main>
+
+<!-- ============================================================
+     footer 里 Contact 标题 + 联系方式列表（colophon 那行留在了
+     index.html 里，见 site.css 注释 3）
+     ============================================================ -->
+<h2 class="t-caps">Contact</h2>
+<ul>
+  <li><a href="mailto:hello@example.com">hello@example.com</a></li>
+  <li><a href="https://github.com/your-handle" rel="me">GitHub</a></li>
+  <li><a href="https://www.linkedin.com/in/your-handle" rel="me">LinkedIn</a></li>
+</ul>

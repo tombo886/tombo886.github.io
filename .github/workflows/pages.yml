@@ -1,0 +1,43 @@
+# 把 public/ 发布到 GitHub Pages（https://tombo886.github.io/）。
+# Pages 只能托管静态文件，server.js 不会在这里运行：
+# - data/projects.json 复制成 /api/projects，前端照常从同一个地址取卡片数据
+# - /api/contact 不存在 → 前端不渲染电话按钮（邮箱仍可点）
+# 需要在仓库 Settings → Pages → Build and deployment → Source 选 "GitHub Actions"。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble static site
+        run: |
+          cp -R public _site
+          mkdir -p _site/api
+          cp data/projects.json _site/api/projects
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

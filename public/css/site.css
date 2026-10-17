@@ -1,0 +1,827 @@
+/* ==========================================================================
+   作品集样式
+   2026-09-22 第 1 步："拆除首页，接 AeroShards"：ParticleText 移到
+   _archive/particle-text/，这份文件收成骨架需要的基础样式。
+   2026-09-22 第 2 步：接上 AeroShards 全屏背景。
+   2026-09-22 第 3 步：在背景之上搭导航胶囊 + 徽标 + 大标题 + 按钮。
+   上层 UI 配色刻意用中性白/半透明灰，没有碰金色强调色——AeroShards
+   是紫色系，站点原本的强调色是暗金 #beaf6e，两套颜色现在会同时出现，
+   要不要统一、往哪个方向统一，等你看了截图再定，这一步不替你选。
+   2026-09-23 首页微调：删掉徽标和 View work 按钮，main 改成纯 flex
+   几何居中（不再用不对称 padding 硬推），Get in touch 改成文字链接
+   Check Portfolio，副标题拆成两行拉开层级。
+   2026-09-24 首页改版：导航从居中窄胶囊改成通栏（.nav-pill 改名
+   .nav-bar）；主视觉标题换成四份转轮廓 SVG，左对齐；Check Portfolio
+   从主视觉移到新增的底部联系信息栏（.contact-bar），电话号码点击后
+   才用 JS 拼出来（见 js/phone-reveal.js）。没有 Figma 数值可核对的地方
+   （字号、行高、间距、联系栏高度）用的是我自己定的 clamp() 值，标在
+   对应规则的注释里，等审阅后再调。
+   2026-09-24 对齐修正：七处左边缘统一用 --gutter 一个变量（之前
+   .site-footer 单独用了 --page-padding，对不上）；修掉 DESIGN 被
+   stretch 撑宽导致居中的 bug；删掉副标题第二行。
+   2026-09-24 三屏改版：单屏拆成 .screen--hero / .screen--about /
+   .screen--work，各 100svh。AeroShards 挂载点从 position: fixed 铺满
+   视口改成 position: absolute 只铺满 .screen--hero（见下面那条注释）。
+   导航从 fixed 改成 sticky，用负 margin-bottom 让它继续叠在 hero 上面
+   （视觉效果跟之前一样，但现在是吸顶不是滚走）。接入 MagicBento（第三
+   屏），组件本体是 js/magic-bento.js，这里只加了它的原版 CSS（逐字
+   照搬，跟 AeroShards 那段一样的处理方式）。
+   ========================================================================== */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+:root {
+  --page-padding: clamp(1.25rem, 4vw, 3rem);
+
+  /* 统一左对齐基线：导航 logo、"个人作品集"+箭头、DESIGN、PORTFOLIO、
+     副标题、联系信息栏第一个元素、页脚署名，七处的左边缘都必须用这
+     一个变量，不能各用各的 clamp()——之前就是因为这七处分别写了看起来
+     差不多但不是同一个表达式的 padding，才对不齐。桌面 72px / 390px
+     20px 是给定值，中间的 5vw 斜率是我自己定的。 */
+  --gutter: clamp(1.25rem, 5vw, 4.5rem);
+
+  /* 导航栏的实际渲染高度，算出来的，不是量出来的：上下 padding-block
+     各 1.1rem + logo 高度 32px + 1px 底边框。sticky 导航要叠在 hero
+     上面（视觉效果跟以前 fixed 时一样），靠的是在 .site-header 上写
+     跟这个值相等、符号相反的 margin-bottom，把下面的 <main> 往上拉
+     等于导航自己的高度，见 .site-header 那条注释。 */
+  --nav-height: calc(2.2rem + 33px);
+
+  --color-bg: #121212;
+  --color-text: #f2f0ec;
+  --color-muted: #a6a29a;
+  --color-accent: #beaf6e;
+  --color-line: #ffffff1a;
+
+  /* 上层 UI（导航胶囊/徽标/按钮）用的中性玻璃质感，全部白色系半透明，
+     刻意不用 --color-accent（暗金）也不用 AeroShards 的紫——这一步的
+     配色是临时的，见上面文件头注释。 */
+  --glass-bg: rgba(10, 9, 13, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --chip-bg: rgba(255, 255, 255, 0.08);
+  --chip-border: rgba(255, 255, 255, 0.16);
+}
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-line);
+  transition: border-color 0.25s, color 0.25s;
+}
+a:hover { border-bottom-color: currentColor; }
+/* 焦点环用白色不用金色——跟这一步其余上层 UI 的中性配色决定一致
+   （见 :root 里 --glass-bg 那条注释）。背景是深色动态画面，白色环
+   加一圈同色系的柔光，保证在最亮的画面帧下也压得住。 */
+a:focus-visible,
+button:focus-visible,
+.magic-bento-card:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.25);
+}
+
+/* 跳过导航 —— 键盘用户和读屏器 */
+.skip-link {
+  position: absolute;
+  left: var(--page-padding);
+  top: -100%;
+  z-index: 10001;
+  padding: 0.6rem 1rem;
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: 0;
+  border-radius: 4px;
+}
+.skip-link:focus { top: var(--page-padding); }
+
+/* --------------------------------------------------------------------------
+   顶部导航 —— 通栏，不再是居中窄胶囊（类名从 .nav-pill 改成 .nav-bar，
+   形状已经不是胶囊了，沿用旧名会误导）。
+
+   页面变成三屏可滚动之后，从 position: fixed 改成 position: sticky——
+   三屏页面里导航滚走是明显的体验倒退，sticky 保证它跟着滚动条一起走、
+   不会被滚出视口。
+
+   sticky 元素默认占文档流里自己的高度，后面的内容会被正常往下推，
+   不会像 fixed 那样自动叠在下面的内容上。这里想要的效果是"叠在 hero
+   上面、backdrop-filter 透出 AeroShards"（跟改版之前一样）。
+
+   负 margin 挪到了 <main>（下面那条规则）身上，不是写在 .site-header
+   自己身上——试过反过来（负 margin-bottom 写在 sticky 元素自己身上）
+   会触发一个渲染层面的重影 bug：导航在滚动之后会在页面底部再画一份
+   模糊的残影，DOM 里没有重复节点（查过 .nav-bar__links 的数量确实是
+   1），纯粹是 position: sticky + 自己身上的负 margin 组合在这个渲染
+   引擎下的绘制问题。同样的视觉效果换成"负 margin-top 写在普通流里的
+   <main> 身上、把它往上拉到导航底下"，不去动 sticky 元素自己的盒模型，
+   没有再复现这个重影。
+
+   z-index: 10 保证导航永远画在 AeroShards（z-index: -1，在
+   .screen--hero 自己的层叠上下文里）和普通内容（z-index: auto）上面，
+   backdrop-filter 才有东西可"透"。 */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2.5vw, 1.5rem);
+  padding-block: 1.1rem;
+  padding-inline: var(--gutter);
+  /* body 的 line-height: 1.7 是给正文用的，这里的文字（导航链接、
+     Contact 按钮）是紧凑的 UI 元素，不应该继承那个值——之前没设，
+     Contact 按钮的行高被拉到跟 41px 一样高，比 32px 的 logo 还高，
+     导航栏实际渲染高度（77px）比 --nav-height 算出来的值（68px）
+     多了将近 9px，sticky 吸顶后 .screen--about/.screen--work 的标题
+     被导航栏底边压掉一截，是真实测出来的 bug，不是猜的。收紧这里的
+     line-height，让 --nav-height 的算法（logo 高度主导）重新成立。 */
+  line-height: 1.2;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.nav-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.nav-bar__logo {
+  height: 32px;
+  width: auto;
+  flex-shrink: 0;
+  display: block;
+}
+
+.nav-bar__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.85rem, 2vw, 1.5rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-bar__links a {
+  border-bottom: none;
+  color: var(--color-muted);
+  font-size: var(--step--1);
+}
+.nav-bar__links a:hover { color: var(--color-text); }
+
+/* --------------------------------------------------------------------------
+   按钮 —— 实心白底主按钮 / 半透明描边次按钮。字重用标题档（500），
+   视觉分量靠字号/字距不够就再调，不提字重到 700/800（tokens.css 里
+   没有这一档，这个站的规范是严格 400/500/600 三档）。
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: 999px;
+  font-size: var(--step--1);
+  font-weight: var(--weight-title);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-bottom: 1px solid transparent; /* 覆盖全局 a 的下划线风格 */
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.btn:hover { border-bottom-color: transparent; }
+
+.btn--primary {
+  background: #ffffff;
+  color: var(--color-bg);
+}
+.btn--primary:hover { background: #e7e5e0; }
+
+/* 描边按钮：材质跟导航胶囊（.nav-pill）对齐——半透明深色填充 +
+   细边框 + backdrop-filter 模糊，是同一套玻璃语言，不是 .btn--primary
+   那种实心白底。故意不用 --glass-bg 原值（alpha 0.55）：这个按钮坐在
+   一直在动的 AeroShards 画面中间（不像导航胶囊贴在顶部相对暗的区域），
+   最亮的那几帧需要更高的不透明度才能保住边界，这里单独调高到 0.7。 */
+.btn--outline {
+  background: rgba(10, 9, 13, 0.7);
+  color: var(--color-text);
+  border-color: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.btn--outline:hover,
+.btn--outline:focus-visible {
+  background: rgba(18, 16, 22, 0.82);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn--sm { padding: 0.55rem 1.2rem; }
+
+.btn__arrow {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.btn--outline:hover .btn__arrow,
+.btn--outline:focus-visible .btn__arrow {
+  transform: translate(2px, -2px);
+}
+
+/* --------------------------------------------------------------------------
+   三屏骨架 —— <main> 现在包着三个 <section class="screen">，各占
+   100svh（用 svh 不用 vh：移动端地址栏收起/展开会让 100vh 的实际高度
+   跳变，100svh 按"地址栏展开时的最小可视高度"算，不会跳）。暂时没加
+   scroll-snap，就是普通滚动。
+   -------------------------------------------------------------------------- */
+
+.screen {
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+/* 锚点跳转（#about/#work/#contact）要避开 sticky 导航，本来想用
+   scroll-margin-top 让浏览器自己留出空间——试过之后发现有副作用：
+   scroll-margin-top 留出的是"视口顶部到目标顶边"这段空当，不会管这段
+   空当里露出来的是什么，露出来的其实是前一屏残留在这段空当里的尾部
+   内容（这里具体是 hero 底部的联系信息栏，隔着导航栏的
+   backdrop-filter 若隐若现，跟个重影一样，一开始还以为是截图工具的
+   bug，实测过 DOM 没有重复节点，是这个真实的滚动定位问题）。改成
+   不用 scroll-margin-top，靠每一屏自己的 padding-top（跟 --nav-height
+   挂钩，不是各写各的 clamp()——同一类 bug 这一轮已经犯过一次，见
+   .nav-bar 那条注释）确保标题不被导航压住，同时这一屏自己的实心背景
+   会盖住 y: 0 开始的整个区域，前一屏的尾部内容自然不会露出来。 */
+
+/* 第一屏：hero。margin-top 是负的 --nav-height：sticky 导航现在是
+   普通文档流元素（自己占实际高度，不再叠在内容上，见 .site-header
+   那条注释），这里把 hero 往上拉回去，效果上还是"hero 从真正的视口
+   顶部开始，导航半透明地叠在它上面"，但负 margin 写在这个普通块级
+   元素身上，不是写在 sticky 元素自己身上——原因见 .site-header 那条
+   注释里的重影 bug。min-height: 100svh 不受 margin-top 影响，往上拉
+   多少，屏幕本身还是整屏高度，不会把第二屏也带上来。
+
+   position: relative 给 AeroShards 挂载点（position: absolute +
+   inset: 0）建立定位上下文；overflow: hidden 防止 WebGPU canvas 出
+   什么意外把这一屏撑出额外的可滚动区域。padding-top 用 --nav-height
+   加一点呼吸空间，保证给导航留出的安全距离不是碰巧凑够的——只推里面
+   正常排布的文字内容，不影响 inset: 0 的 AeroShards 挂载点（absolute
+   定位的包含块是祖先的 padding box，不受 padding 挤压，依然贴着真正
+   的视口顶部）。 */
+.screen--hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-top: calc(-1 * var(--nav-height));
+  padding-top: calc(var(--nav-height) + clamp(3rem, 10vh, 5rem));
+}
+
+/* 标题换成左对齐的 SVG 大字之后，hero-content 跟着改成左对齐（继续跟
+   标题右边有大片留白、副标题居中会很奇怪），水平方向用 --gutter 跟
+   导航共用同一条左边距。flex: 1 让它占满 .screen--hero 里除联系信息栏
+   之外的剩余高度，justify-content: center 在这个高度范围内垂直居中，
+   一点 translateY 让视觉重心略高于几何中心。 */
+.hero-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-inline: var(--gutter);
+  gap: clamp(1.25rem, 3vw, 2rem);
+  transform: translateY(-4vh);
+  max-width: 100%;
+}
+
+/* 标题：四份转轮廓 SVG，不再是活字排版，字重规范（tokens.css 的
+   400/500/600）在这里不适用——见 index.html 里 h1 那段注释。
+   .hero-kicker 是"个人作品集 →"这一行，.hero-display 是 DESIGN/
+   PORTFOLIO 两行大字，纵向紧贴（gap 很小）。 */
+.hero-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  color: var(--color-text);
+  filter: drop-shadow(0 4px 32px rgba(0, 0, 0, 0.5));
+  max-width: 100%;
+}
+
+.hero-kicker {
+  --kicker-h: clamp(1.35rem, 1rem + 1.4vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+.hero-kicker .headline-svg--cn {
+  height: var(--kicker-h);
+  width: auto;
+  display: block;
+}
+.hero-kicker__arrow {
+  height: calc(var(--kicker-h) * 0.5);
+  width: auto;
+  display: block;
+}
+
+.hero-display {
+  /* DESIGN 和 PORTFOLIO 必须共用同一个高度表达式（下面直接量出来验证
+     过），不能分别各写一个 clamp()——那样两个独立的响应式曲线在大多数
+     宽度下凑巧数值相近，但不是"同一个值"，量出来会有零点几像素的差，
+     而且没有互相感知对方会不会因为高度太大导致宽度溢出容器。
+
+     这个表达式是 min() 两项取小：
+     1) clamp(3.25rem, 1.5rem + 9vw, 8rem) —— 原本想要的响应式字号曲线；
+     2) calc((100vw - 2 * var(--gutter)) / 11.556) —— 按 PORTFOLIO 的宽高比
+        11.556 反推、"宽度刚好撑满容器时对应的高度"，11.556 是两个词里
+        更宽的那个（PORTFOLIO），保证只要这个高度不超过它，PORTFOLIO
+        的宽度就不会超过容器；DESIGN 比 PORTFOLIO 窄（7.698 < 11.556），
+        同一个高度下 DESIGN 天然更不会溢出，不需要单独算。
+     窄屏时第 2 项更小，用它兜底防止撑爆；宽屏时第 1 项更小，正常按
+     字号曲线走。 */
+  --headline-h: min(clamp(3.25rem, 1.5rem + 9vw, 8rem), calc((100vw - 2 * var(--gutter)) / 11.556));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* 见下面 headline-svg 那条注释，不能让它 stretch */
+  gap: clamp(0.25rem, 0.8vw, 0.5rem); /* "上下紧贴" */
+  max-width: 100%;
+}
+/* DESIGN 和 PORTFOLIO 用同一个 viewBox 高度（725），给同样的 CSS
+   height 就能让两行大字号一致——PORTFOLIO 字母更多，viewBox 宽高比
+   更大（11.556 对 7.698），同样高度下天然更宽，右边探出去更多，这是
+   设计稿要的效果。
+
+   这里两处踩过坑，都是同一类问题——"CSS 框的高度"和"SVG 实际画出来的
+   高度"不是一回事：
+   1) .hero-display 是 flex-direction: column，交叉轴是水平方向，默认
+      align-items: stretch 会把两个 svg 的宽度都撑到容器满宽，越界后
+      SVG 默认的 preserveAspectRatio（xMidYMid）把图形居中，看起来就是
+      "DESIGN 被居中、左边缩进一块"。修法：给 svg 补上明确的
+      width/height 属性（跟 viewBox 数值一致），外加 .hero-display 设
+      align-items: flex-start，不再被横向撑伸。
+   2) 补上 width/height 属性、又用 max-width: 100% 兜底之后，390px 下
+      PORTFOLIO 按高度换算出的宽度会超过容器，max-width 把 CSS 框的
+      宽度按比例缩回去，但框的 height 停留在原来 clamp() 算出的值不变
+      ——这时 SVG 内部按 preserveAspectRatio 整体缩小去塞进那个更窄的
+      框，实际画出来的图形比 CSS 框矮，且两个词分别按各自比例缩小的
+      幅度不一样，"同高"就被破坏了，getBoundingClientRect().height
+      量出来的是框的高度，不是这个视觉真实高度，光量框会被这个 bug
+      骗过去。改成上面这个 --headline-h（min() 里已经把"会不会撑爆
+      容器"算在内）之后，CSS 框本身在任何宽度下都不会超出容器，SVG
+      不需要再触发内部缩小，框的高度就是真实画出来的高度，两个量出来
+      永远相等。 */
+.headline-svg--design,
+.headline-svg--portfolio {
+  height: var(--headline-h);
+  width: auto;
+  max-width: 100%; /* 防御性兜底，理论上 --headline-h 已经保证不会触发 */
+  display: block;
+}
+
+.hero-subtitle {
+  margin: 0;
+  max-width: 34ch;
+  font-size: var(--step-1);
+  font-weight: var(--weight-body);
+  color: var(--color-text);
+}
+
+/* --------------------------------------------------------------------------
+   底部联系信息栏 —— 材质跟 .nav-bar 呼应（同一套玻璃语言），左右
+   padding 也用同一条 clamp() 曲线，跟导航栏对齐同一条竖线。三块：
+   电话（JS 动态插入，见 js/phone-reveal.js）、邮箱（始终明文可点）、
+   Check Portfolio（复用 .btn--outline）。高度、内部间距没有 Figma
+   数据，用的是我自己定的值，截图之后再调。
+   -------------------------------------------------------------------------- */
+
+.contact-bar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.75rem, 3vw, 2rem);
+  padding-block: clamp(1.1rem, 2.5vw, 1.75rem);
+  padding-inline: var(--gutter);
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.contact-bar__phone {
+  display: flex;
+  align-items: center;
+  min-height: 2.2rem; /* 跟按钮/链接的行高对齐，避免电话槽位空着时这一列高度跳动 */
+}
+
+.contact-bar__reveal {
+  background: none;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  color: var(--color-muted);
+  font-family: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-body);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.contact-bar__reveal:hover {
+  color: var(--color-text);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.contact-bar__phone-link {
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-title);
+}
+
+.contact-bar__email {
+  margin: 0;
+  font-size: var(--step--1);
+}
+.contact-bar__email a {
+  color: var(--color-text);
+}
+
+.contact-bar__cta {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* --------------------------------------------------------------------------
+   第二、三屏 —— 纯色背景（var(--color-bg)），AeroShards 不延伸到这里
+   （见 .screen--hero 和 .aero-shards-mount 那两条注释）。两屏共用同一套
+   居中 + gutter 对齐规则。
+   -------------------------------------------------------------------------- */
+
+.screen--about,
+.screen--work {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg);
+}
+
+.screen__inner {
+  width: 100%;
+  padding-inline: var(--gutter);
+  /* 上下 padding 分开写：padding-top 保证跟 --nav-height 挂钩（见上面
+     .screen 那条注释），不是跟 padding-bottom 共用同一个巧合数值相近
+     的 clamp()。 */
+  padding-top: calc(var(--nav-height) + clamp(1.5rem, 4vh, 3rem));
+  padding-bottom: clamp(3rem, 8vh, 5rem);
+}
+
+.screen__title {
+  margin: 0 0 1rem;
+  color: var(--color-text);
+}
+
+/* 第二屏目前是占位——没有链接指向一片空白这条约束靠这一行文字撑住，
+   删掉之前先想清楚 #about 这个锚点还诚不诚实。 */
+.screen__placeholder {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--color-muted);
+}
+
+/* --------------------------------------------------------------------------
+   页脚 —— 只有字体署名这一行，HarmonyOS 协议要求的 prominent notice
+   -------------------------------------------------------------------------- */
+
+.site-footer {
+  flex-shrink: 0;
+  padding-block: var(--page-padding);
+  padding-inline: var(--gutter); /* 之前这里用的是 --page-padding，跟其余六处不是同一个值，左边缘对不上 */
+  border-top: 1px solid var(--color-line);
+  color: var(--color-muted);
+}
+.site-footer__colophon { font-size: var(--step--1); max-width: 70ch; }
+
+/* --------------------------------------------------------------------------
+   AeroShards 全屏背景
+   -------------------------------------------------------------------------- */
+
+/* 挂载点：铺满 .screen--hero（不再是铺满整个视口）。position: absolute
+   + inset: 0，包含块是 .screen--hero（position: relative）——页面变成
+   三屏可滚动之后，如果继续 position: fixed + inset: 0，会一直压在第二
+   三屏内容上面（可读性差），WebGPU 也会一直跑，还跟 MagicBento 的 GSAP
+   动画抢资源。改成 absolute 之后，滚出 .screen--hero 视口范围时，
+   aero-shards.js 内部那个观察自己根节点的 IntersectionObserver
+   （visibilityObserver，见该文件里的注释）会检测到、把渲染循环停掉——
+   这段逻辑本来就在，只是 fixed 铺满视口时它永远"可见"，从没真正起过
+   作用。z-index: -1 保证 hero-content/联系信息栏（z-index: auto）都画
+   在它上面。 */
+.aero-shards-mount {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 下面这段是 AeroShards.css 原文，逐字照搬。.aero-shards 和它的
+   canvas 本来就是 pointer-events: none，鼠标监听是原组件自己挂在
+   window 上的，不依赖这层容器接事件（见 js/aero-shards.js 顶部注释）。 */
+.aero-shards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.aero-shards__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.aero-shards[data-ready='true'] .aero-shards__canvas {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aero-shards__canvas {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   WebGPU 降级：js/aero-shards-init.js 在 prefers-reduced-motion、
+   navigator.gpu 缺失/requestAdapter() 失败、或运行时 onError 任一种
+   情况下给 <body> 加这个类。打底色 #120F17 和两团渐变的颜色
+   （#896ABD 暗紫、#A855F7 亮紫）跟 AERO_SHARDS_CONFIG 里的
+   backgroundColor/shardColor/accentColor 是同一套值，写死在这里，
+   改配置颜色时要同步改。不留黑屏、不留空白。
+   -------------------------------------------------------------------------- */
+body.no-webgpu {
+  background:
+    radial-gradient(ellipse 60% 50% at 25% 20%, rgba(137, 106, 189, 0.22), transparent 65%),
+    radial-gradient(ellipse 55% 45% at 75% 80%, rgba(168, 85, 247, 0.16), transparent 60%),
+    #120F17;
+}
+
+/* ==========================================================================
+   MagicBento —— 移植自 React Bits（许可证见 licenses/react-bits-LICENSE.txt），
+   实现在 js/magic-bento.js。下面这段是 MagicBento.css 原文，逐字照搬
+   （跟 AeroShards.css 那段一样的处理方式），没有改类名、没有改数值。
+   https://reactbits.dev/components/magic-bento
+
+   .magic-bento-mount 是这个项目自己加的：给 .card-grid 一个挂载点，
+   原组件没有这一层，用 width: 100% 让网格在 .screen__inner 里正常撑开，
+   卡片网格自己的左边缘因为没有 margin: auto（只有 599px 以下那条媒体
+   查询里才有），天然贴着 .screen__inner 的左边，跟这个项目其余内容
+   共用同一条 --gutter 对齐线，不用另外调。
+   ========================================================================== */
+
+.magic-bento-mount {
+  width: 100%;
+}
+
+:root {
+  --hue: 27;
+  --sat: 69%;
+  --white: hsl(0, 0%, 100%);
+  --purple-primary: rgba(132, 0, 255, 1);
+  --purple-glow: rgba(132, 0, 255, 0.2);
+  --purple-border: rgba(132, 0, 255, 0.8);
+  --border-color: #2F293A;
+  --background-dark: #120F17;
+  color-scheme: light dark;
+}
+
+.card-grid {
+  display: grid;
+  gap: 0.5em;
+  padding: 0.75em;
+  max-width: 54em;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
+}
+
+.magic-bento-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  aspect-ratio: 4/3;
+  min-height: 200px;
+  width: 100%;
+  max-width: 100%;
+  padding: 1.25em;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--background-dark);
+  font-weight: 300;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-intensity: 0;
+  --glow-radius: 200px;
+}
+
+.magic-bento-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.magic-bento-card__header,
+.magic-bento-card__content {
+  display: flex;
+  position: relative;
+  color: var(--white);
+}
+
+.magic-bento-card__header {
+  gap: 0.75em;
+  justify-content: space-between;
+}
+
+.magic-bento-card__content {
+  flex-direction: column;
+}
+
+.magic-bento-card__label {
+  font-size: 16px;
+}
+
+.magic-bento-card__title,
+.magic-bento-card__description {
+  --clamp-title: 1;
+  --clamp-desc: 2;
+}
+
+.magic-bento-card__title {
+  font-weight: 400;
+  font-size: 16px;
+  margin: 0 0 0.25em;
+}
+
+.magic-bento-card__description {
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.9;
+}
+
+.magic-bento-card--text-autohide .magic-bento-card__title,
+.magic-bento-card--text-autohide .magic-bento-card__description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.magic-bento-card--text-autohide .magic-bento-card__title {
+  -webkit-line-clamp: var(--clamp-title);
+  line-clamp: var(--clamp-title);
+}
+
+.magic-bento-card--text-autohide .magic-bento-card__description {
+  -webkit-line-clamp: var(--clamp-desc);
+  line-clamp: var(--clamp-desc);
+}
+
+@media (max-width: 599px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+    width: 90%;
+    margin: 0 auto;
+    padding: 0.5em;
+  }
+
+  .magic-bento-card {
+    width: 100%;
+    min-height: 180px;
+  }
+}
+
+@media (min-width: 600px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .magic-bento-card:nth-child(3) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .magic-bento-card:nth-child(4) {
+    grid-column: 1 / span 2;
+    grid-row: 2 / span 2;
+  }
+
+  .magic-bento-card:nth-child(6) {
+    grid-column: 4;
+    grid-row: 3;
+  }
+}
+
+/* Border glow effect */
+.magic-bento-card--border-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 6px;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(132, 0, 255, calc(var(--glow-intensity) * 0.8)) 0%,
+    rgba(132, 0, 255, calc(var(--glow-intensity) * 0.4)) 30%,
+    transparent 60%
+  );
+  border-radius: inherit;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.magic-bento-card--border-glow:hover::after {
+  opacity: 1;
+}
+
+.magic-bento-card--border-glow:hover {
+  box-shadow:
+    0 4px 20px rgba(46, 24, 78, 0.4),
+    0 0 30px var(--purple-glow);
+}
+
+.particle-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.particle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: rgba(132, 0, 255, 0.2);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.particle-container:hover {
+  box-shadow:
+    0 4px 20px rgba(46, 24, 78, 0.2),
+    0 0 30px var(--purple-glow);
+}
+
+/* Global spotlight styles */
+.global-spotlight {
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+  z-index: 200 !important;
+  pointer-events: none;
+}
+
+.bento-section {
+  position: relative;
+  user-select: none;
+}

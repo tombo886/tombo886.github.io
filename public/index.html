@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ====================================================================
+       机器可读性要点 1：title / description / JSON-LD 三处对"你是谁、
+       你做什么"的说法必须一致，且必须是能被当作事实读取的名字——h1
+       是句问候语（"Hi, I’m Tombo"），不能拿去同步这三处，那会让机器把
+       问候语误当成本人姓名。h1 允许跟这三处措辞不同，是刻意的。
+       TODO: 全文搜索 "example.com" 和 "Tombo" 换成你自己的。
+       ==================================================================== -->
+  <title>Tombo — Product Experience Designer</title>
+  <meta name="description"
+    content="Portfolio of Tombo, a product experience designer working on industrial automation interfaces." />
+  <link rel="canonical" href="https://example.com/" />
+
+  <meta property="og:type" content="profile" />
+  <meta property="og:title" content="Tombo — Product Experience Designer" />
+  <meta property="og:description"
+    content="Portfolio of Tombo, a product experience designer working on industrial automation interfaces." />
+  <meta property="og:url" content="https://example.com/" />
+  <meta name="twitter:card" content="summary" />
+
+  <!-- 字体预载：可变字体一个文件覆盖全部字重，优先级最高 -->
+  <link rel="preload" href="fonts/inter/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/site.css" />
+
+  <!-- vgpu / @vgpu/core / @vgpu/wgsl 是本地 vendor 文件（js/vendor/），
+       没有 CDN 外链，也没有跑任何打包工具——这几个包发布到 npm 的 dist/
+       本来就是普通 ESM，互相用相对路径 import，直接当静态文件 serve
+       就能被浏览器解析，只是入口的三个 bare specifier 需要 importmap。
+       见 js/aero-shards.js 顶部注释和 README 的许可证一节。 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "vgpu": "./js/vendor/vgpu/index.js",
+      "@vgpu/core": "./js/vendor/vgpu-core/index.js",
+      "@vgpu/wgsl": "./js/vendor/vgpu-wgsl/index.js",
+      "@vgpu/wgsl/reflect-source": "./js/vendor/vgpu-wgsl/runtime/reflect-source.js"
+    }
+  }
+  </script>
+
+  <!-- ====================================================================
+       机器可读性要点 2：JSON-LD 结构化数据
+       页面上没有作品列表，@graph 里也没有 ItemList/CreativeWork——加了
+       就是在对机器谎报页面上有一份看不见的作品清单，这个项目之前踩过
+       这个坑。Person / WebSite / ProfilePage 三个节点原样保留。
+       ==================================================================== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://example.com/#person",
+        "name": "Tombo",
+        "alternateName": ["Feiping Liu", "刘飞平"],
+        "jobTitle": "Product Experience Designer",
+        "description": "Product experience designer working on industrial automation interfaces.",
+        "url": "https://example.com/",
+        "email": "mailto:tomboliu@qq.com",
+        "knowsLanguage": ["en", "zh-Hans"],
+        "knowsAbout": [
+          "Industrial automation interfaces",
+          "Machine vision",
+          "Design systems",
+          "Data visualisation",
+          "Human-machine interface design"
+        ],
+        "sameAs": [
+          "https://github.com/your-handle",
+          "https://www.linkedin.com/in/your-handle",
+          "https://dribbble.com/your-handle"
+        ],
+        "worksFor": {
+          "@type": "Organization",
+          "name": "UnitX",
+          "url": "https://example.com/"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://example.com/#website",
+        "url": "https://example.com/",
+        "name": "Tombo — Portfolio",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://example.com/#person" }
+      },
+      {
+        "@type": "ProfilePage",
+        "@id": "https://example.com/#page",
+        "url": "https://example.com/",
+        "name": "Tombo — Product Experience Designer",
+        "isPartOf": { "@id": "https://example.com/#website" },
+        "mainEntity": { "@id": "https://example.com/#person" },
+        "dateModified": "2026-09-24"
+      }
+    ]
+  }
+  </script>
+</head>
+
+<body>
+  <!-- skip-link 指向下面的 #main-content。 -->
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <!-- 通栏导航，sticky 吸顶（见 css/site.css 里 .nav-bar 的注释，包括
+       z-index 和 AeroShards/backdrop-filter 的层叠关系）。桌面端两侧
+       72px padding，390px 収到 20px——没有 Figma 数值可核对，这两个
+       断点值和中间的 clamp() 曲线是我自己定的，截图给用户看了再调。
+
+       Work / About / Contact 现在指向真实区块，不再是 href="#" +
+       aria-disabled 占位——那条约束的前提（页面上没有对应区块）已经
+       不成立了。js/placeholder-links.js 也因此被删掉，它自己的文件头
+       注释早就写好了删除条件："等对应的区块真的建好了……不需要这整个
+       文件的时候就删掉"，现在条件满足。 -->
+  <header class="site-header">
+    <nav class="nav-bar" aria-label="Primary">
+      <div class="nav-bar__brand">
+        <!-- 官方 logo SVG，逐字节保存自用户提供的文件，未做任何修改/描摹。
+             viewBox 61×49，图形本身已经是完整 lockup（扇形图标 +
+             "TOMBO" 字形）。alt 是"Tombo"：图片是唯一的可读文字来源，
+             不能留空。.nav-bar__logo 在 site.css 里没有
+             border/background/box-shadow，直接坐在导航栏上。 -->
+        <img class="nav-bar__logo" src="img/logo.svg" width="61" height="49" alt="Tombo" />
+      </div>
+
+      <ul class="nav-bar__links">
+        <li><a href="#work">Work</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+
+      <a class="btn btn--primary btn--sm" href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <!-- 第一屏：hero。AeroShards 现在限定在这一屏内（position: absolute
+         铺满这个 section，不再是 position: fixed 铺满整个视口）——
+         页面变成可滚动之后，继续 fixed 会让它一直压在第二三屏内容上面，
+         可读性差，WebGPU 也会一直跑。aero-shards.js 内部本来就有一个
+         IntersectionObserver 在观察它自己的根节点（见该文件里
+         visibilityObserver 那段），滚出视口时 frozen 判断会生效、
+         渲染循环真正停下来——这段逻辑之前一直在，只是没机会起作用：
+         之前 mount 是 fixed + inset: 0，永远铺满视口、永远"可见"，
+         这个 observer 名存实亡。现在 mount 变成跟着页面滚动的普通内容，
+         这段逻辑才真正生效，不用再另外写一遍。 -->
+    <section class="screen screen--hero" id="hero" aria-label="Intro">
+      <div class="aero-shards-mount" aria-hidden="true"></div>
+      <div class="hero-content">
+      <!-- 主视觉标题改成四份预转轮廓的 SVG（用户提供，assets/ 下，未做
+           任何再加工），不再是活字。字体来源见 licenses/ 和 README 的
+           许可证一节——HarmonyOS Sans SC 协议禁止子集化/转 woff2，
+           Stretch Pro 是 Personal Use 授权不能上站，两条路都走不通，
+           所以设计稿直接把这几个词转成了矢量路径，页面上不加载任何
+           字体文件来渲染这几个词。
+
+           h1 本身必须有真实文字：四个 SVG 各自 aria-hidden="true"（文件
+           里已经带了），可读文字另外补上，做到"无障碍树里每段文字只
+           出现一次"——SVG 不进无障碍树，可读文字进，不会重复报两遍。
+
+           "个人作品集"这四个字没有用 .sr-only 文字节点，而是用空元素 +
+           aria-label：真实文字节点即使被 .sr-only 裁剪到 1×1px 不可见，
+           浏览器排版引擎仍然要给它定字形，会触发 unicode-range 里那
+           三个 8MB 的 HarmonyOS TTF 按需下载——这正是这一版改用 SVG
+           要避免的下载量，视觉隐藏≠不触发字体加载。aria-label 是纯
+           属性值，从不参与渲染排版，不会触发字体下载，读屏器照样能
+           读到。英文 "DESIGN"/"PORTFOLIO" 不用这个顾虑：Inter 本来就
+           无条件 preload，用 .sr-only 真文字不会多产生任何请求。
+           lang="zh-Hans" 因为整页 <html lang="en">。 -->
+      <h1 class="hero-title">
+        <span class="hero-kicker">
+          <span class="sr-only" lang="zh-Hans" role="img" aria-label="个人作品集"></span>
+          <svg class="headline-svg headline-svg--cn" width="4928" height="930" viewBox="0 0 4928.0 930.0" role="img"
+            aria-hidden="true" focusable="false">
+            <path fill="currentColor"
+              d="M0.0 398.0Q140.0 315.0 251.0 213.0Q362.0 111.0 432.0 2.0H513.0Q592.0 118.0 698.5 215.5Q805.0 313.0 947.0 400.0L886.0 490.0Q754.0 404.0 647.5 309.0Q541.0 214.0 473.0 118.0Q330.0 312.0 57.0 490.0ZM422.0 333.0H522.0V923.0H422.0ZM1926.0 844.0 1860.0 930.0Q1712.0 812.0 1617.5 689.5Q1523.0 567.0 1475.0 429.0Q1431.0 567.0 1336.5 688.0Q1242.0 809.0 1090.0 920.0L1022.0 840.0Q1168.0 738.0 1253.5 633.0Q1339.0 528.0 1377.5 404.5Q1416.0 281.0 1418.0 117.0Q1420.0 83.0 1420.0 21.0H1518.0Q1516.0 63.0 1516.0 153.0Q1516.0 176.0 1514.0 220.0Q1543.0 414.0 1646.0 567.0Q1749.0 720.0 1926.0 844.0ZM2912.0 244.0H2607.0V390.0H2863.0V483.0H2607.0V628.0H2884.0V722.0H2607.0V928.0H2514.0V244.0H2467.0Q2406.0 365.0 2320.0 472.0L2255.0 394.0Q2320.0 317.0 2374.0 217.0Q2428.0 117.0 2466.0 6.0L2557.0 31.0Q2538.0 87.0 2512.0 150.0H2912.0ZM2313.0 43.0Q2274.0 159.0 2231.0 250.0V922.0H2137.0V418.0Q2096.0 482.0 2042.0 548.0L2000.0 441.0Q2061.0 364.0 2120.0 251.0Q2179.0 138.0 2219.0 16.0ZM3151.0 44.0H3786.0V380.0H3151.0ZM3245.0 292.0H3693.0V131.0H3245.0ZM3147.0 907.0H3059.0V476.0H3417.0V907.0H3330.0V855.0H3147.0ZM3509.0 907.0V476.0H3879.0V907.0H3792.0V855.0H3598.0V907.0ZM3330.0 769.0V563.0H3147.0V769.0ZM3598.0 563.0V769.0H3792.0V563.0ZM4140.0 274.0Q4105.0 316.0 4050.0 371.0L4005.0 289.0Q4059.0 245.0 4122.0 161.5Q4185.0 78.0 4221.0 2.0L4309.0 25.0Q4289.0 66.0 4262.0 108.0H4476.0Q4461.0 71.0 4439.0 24.0L4532.0 0.0Q4556.0 52.0 4577.0 108.0H4863.0V175.0H4569.0V233.0H4839.0V295.0H4569.0V353.0H4839.0V417.0H4569.0V474.0H4879.0V544.0H4140.0ZM4230.0 233.0H4481.0V175.0H4230.0ZM4230.0 353.0H4481.0V295.0H4230.0ZM4230.0 474.0H4481.0V417.0H4230.0ZM4895.0 910.0Q4776.0 869.0 4684.5 823.0Q4593.0 777.0 4517.0 717.0V928.0H4428.0V719.0Q4283.0 830.0 4053.0 916.0L4016.0 833.0Q4229.0 768.0 4350.0 689.0H4042.0V614.0H4428.0V564.0H4517.0V614.0H4905.0V689.0H4593.0Q4725.0 771.0 4928.0 829.0Z" />
+          </svg>
+          <!-- 长箭头是纯几何图形，直接画，没有去字体里找箭头字符。 -->
+          <svg class="hero-kicker__arrow" width="160" height="32" viewBox="0 0 160 32" fill="none" aria-hidden="true"
+            focusable="false">
+            <path d="M4 16H148M148 16L118 2M148 16L118 30" stroke="currentColor" stroke-width="6"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="hero-display">
+          <span class="sr-only">DESIGN</span>
+          <svg class="headline-svg headline-svg--design" width="5581" height="725" viewBox="0 0 5581.0 725.0"
+            role="img" aria-hidden="true" focusable="false">
+            <path fill="currentColor"
+              d="M0.0 10.0H507.0Q614.0 10.0 700.0 23.0Q786.0 36.0 843.5 61.0Q901.0 86.0 942.5 117.0Q984.0 148.0 1005.5 186.5Q1027.0 225.0 1036.5 262.0Q1046.0 299.0 1046.0 342.0V370.0Q1046.0 420.0 1034.0 464.0Q1022.0 508.0 985.5 555.0Q949.0 602.0 891.5 635.0Q834.0 668.0 735.0 689.5Q636.0 711.0 508.0 711.0H0.0ZM239.0 176.0V543.0H488.0Q795.0 543.0 795.0 362.0V356.0Q795.0 176.0 488.0 176.0ZM1136.0 10.0H1942.0V169.0H1372.0V273.0H1928.0V433.0H1372.0V548.0H1952.0V711.0H1136.0ZM2478.0 725.0Q2364.0 725.0 2279.0 707.0Q2194.0 689.0 2148.0 663.5Q2102.0 638.0 2074.5 602.0Q2047.0 566.0 2039.5 536.5Q2032.0 507.0 2032.0 474.0V464.0H2281.0Q2285.0 521.0 2332.5 548.0Q2380.0 575.0 2486.0 575.0H2541.0Q2594.0 575.0 2641.0 569.0Q2688.0 563.0 2709.5 551.5Q2731.0 540.0 2738.5 528.5Q2746.0 517.0 2746.0 501.0Q2746.0 478.0 2733.5 465.0Q2721.0 452.0 2676.0 442.0Q2631.0 432.0 2546.0 430.0L2471.0 429.0L2414.0 427.0Q2042.0 418.0 2042.0 222.0V214.0Q2042.0 180.0 2051.5 151.5Q2061.0 123.0 2088.5 94.0Q2116.0 65.0 2160.5 45.5Q2205.0 26.0 2281.0 13.0Q2357.0 0.0 2458.0 0.0H2528.0Q2633.0 0.0 2713.0 13.5Q2793.0 27.0 2840.5 47.5Q2888.0 68.0 2918.5 98.0Q2949.0 128.0 2960.0 158.0Q2971.0 188.0 2971.0 221.0V231.0H2723.0Q2721.0 219.0 2717.5 211.5Q2714.0 204.0 2700.5 190.5Q2687.0 177.0 2665.5 168.5Q2644.0 160.0 2601.5 153.5Q2559.0 147.0 2514.0 147.0H2478.0Q2400.0 147.0 2354.0 157.0Q2308.0 167.0 2298.0 177.5Q2288.0 188.0 2288.0 207.0Q2288.0 225.0 2299.0 236.5Q2310.0 248.0 2350.5 257.5Q2391.0 267.0 2465.0 267.0L2521.0 268.0L2593.0 269.0Q2806.0 273.0 2901.0 322.5Q2996.0 372.0 2996.0 477.0V490.0Q2996.0 529.0 2986.5 559.5Q2977.0 590.0 2948.5 622.0Q2920.0 654.0 2872.5 675.5Q2825.0 697.0 2742.0 711.0Q2659.0 725.0 2549.0 725.0ZM3326.0 13.0V711.0H3088.0V13.0ZM3944.0 724.0H3922.0Q3804.0 724.0 3712.0 700.5Q3620.0 677.0 3565.0 640.5Q3510.0 604.0 3475.5 556.0Q3441.0 508.0 3428.0 463.5Q3415.0 419.0 3415.0 373.0V346.0Q3415.0 300.0 3425.5 257.5Q3436.0 215.0 3470.5 166.5Q3505.0 118.0 3559.0 83.0Q3613.0 48.0 3709.0 24.5Q3805.0 1.0 3931.0 1.0H3975.0Q4096.0 1.0 4189.5 20.0Q4283.0 39.0 4335.5 66.5Q4388.0 94.0 4421.5 132.0Q4455.0 170.0 4466.5 201.5Q4478.0 233.0 4479.0 266.0V267.0H4225.0Q4187.0 167.0 3954.0 167.0Q3665.0 167.0 3665.0 356.0V366.0Q3665.0 443.0 3736.0 498.5Q3807.0 554.0 3952.0 554.0Q4016.0 554.0 4069.0 545.5Q4122.0 537.0 4153.5 524.5Q4185.0 512.0 4207.0 497.5Q4229.0 483.0 4238.0 472.0Q4247.0 461.0 4247.0 454.0V452.0H3948.0V320.0H4484.0V711.0H4312.0Q4311.0 649.0 4310.0 603.0Q4196.0 724.0 3944.0 724.0ZM4592.0 13.0H4859.0L5346.0 453.0V13.0H5581.0V712.0H5346.0L4828.0 249.0V712.0H4592.0Z" />
+          </svg>
+          <span class="sr-only">PORTFOLIO</span>
+          <svg class="headline-svg headline-svg--portfolio" width="8378" height="725" viewBox="0 0 8378.0 725.0"
+            role="img" aria-hidden="true" focusable="false">
+            <path fill="currentColor"
+              d="M572.0 479.0H239.0V712.0H0.0V13.0H572.0Q928.0 13.0 928.0 240.0V250.0Q928.0 479.0 572.0 479.0ZM239.0 172.0V322.0H568.0Q679.0 322.0 679.0 249.0V246.0Q679.0 172.0 568.0 172.0ZM1516.0 0.0H1549.0Q1648.0 0.0 1729.0 13.0Q1810.0 26.0 1865.0 46.5Q1920.0 67.0 1961.0 97.0Q2002.0 127.0 2025.0 157.5Q2048.0 188.0 2062.5 223.5Q2077.0 259.0 2081.0 287.0Q2085.0 315.0 2085.0 346.0V375.0Q2085.0 405.0 2081.0 433.0Q2077.0 461.0 2062.5 497.5Q2048.0 534.0 2025.5 564.5Q2003.0 595.0 1961.5 625.5Q1920.0 656.0 1865.5 677.0Q1811.0 698.0 1729.5 711.5Q1648.0 725.0 1549.0 725.0H1516.0Q1417.0 725.0 1335.0 711.5Q1253.0 698.0 1198.5 677.0Q1144.0 656.0 1102.5 625.5Q1061.0 595.0 1038.0 564.5Q1015.0 534.0 1001.0 497.5Q987.0 461.0 983.0 433.0Q979.0 405.0 979.0 375.0V346.0Q979.0 315.0 983.0 287.5Q987.0 260.0 1001.0 224.0Q1015.0 188.0 1038.0 157.5Q1061.0 127.0 1102.0 97.0Q1143.0 67.0 1198.0 46.5Q1253.0 26.0 1335.0 13.0Q1417.0 0.0 1516.0 0.0ZM1835.0 366.0V353.0Q1835.0 327.0 1827.5 303.5Q1820.0 280.0 1799.5 254.5Q1779.0 229.0 1746.5 211.0Q1714.0 193.0 1657.0 181.0Q1611.0 172.0 1552.0 170.0Q1535.0 170.0 1520.0 170.0Q1229.0 175.0 1229.0 353.0V364.0Q1229.0 398.0 1242.0 428.0Q1255.0 458.0 1285.5 488.5Q1316.0 519.0 1381.0 536.0Q1441.0 553.0 1524.0 554.0Q1535.0 554.0 1548.0 554.0Q1625.0 552.0 1681.0 537.0Q1746.0 520.0 1777.5 490.0Q1809.0 460.0 1822.0 430.0Q1835.0 400.0 1835.0 366.0ZM3035.0 522.0V712.0H2818.0V589.0Q2818.0 525.0 2785.5 496.5Q2753.0 468.0 2674.0 468.0H2392.0V712.0H2175.0V24.0H2733.0Q3033.0 24.0 3033.0 202.0V213.0Q3033.0 322.0 2904.0 364.0Q2963.0 381.0 2999.0 420.0Q3035.0 459.0 3035.0 522.0ZM2807.0 248.0V247.0Q2807.0 217.0 2785.5 198.5Q2764.0 180.0 2720.0 180.0H2392.0V315.0H2720.0Q2764.0 315.0 2785.5 296.5Q2807.0 278.0 2807.0 248.0ZM3420.0 712.0V178.0H3092.0V13.0H3990.0V178.0H3661.0V712.0ZM4060.0 13.0H4847.0V172.0H4297.0V275.0H4833.0V435.0H4297.0V711.0H4060.0ZM5444.0 0.0H5477.0Q5576.0 0.0 5657.0 13.0Q5738.0 26.0 5793.0 46.5Q5848.0 67.0 5889.0 97.0Q5930.0 127.0 5953.0 157.5Q5976.0 188.0 5990.5 223.5Q6005.0 259.0 6009.0 287.0Q6013.0 315.0 6013.0 346.0V375.0Q6013.0 405.0 6009.0 433.0Q6005.0 461.0 5990.5 497.5Q5976.0 534.0 5953.5 564.5Q5931.0 595.0 5889.5 625.5Q5848.0 656.0 5793.5 677.0Q5739.0 698.0 5657.5 711.5Q5576.0 725.0 5477.0 725.0H5444.0Q5345.0 725.0 5263.0 711.5Q5181.0 698.0 5126.5 677.0Q5072.0 656.0 5030.5 625.5Q4989.0 595.0 4966.0 564.5Q4943.0 534.0 4929.0 497.5Q4915.0 461.0 4911.0 433.0Q4907.0 405.0 4907.0 375.0V346.0Q4907.0 315.0 4911.0 287.5Q4915.0 260.0 4929.0 224.0Q4943.0 188.0 4966.0 157.5Q4989.0 127.0 5030.0 97.0Q5071.0 67.0 5126.0 46.5Q5181.0 26.0 5263.0 13.0Q5345.0 0.0 5444.0 0.0ZM5763.0 366.0V353.0Q5763.0 327.0 5755.5 303.5Q5748.0 280.0 5727.5 254.5Q5707.0 229.0 5674.5 211.0Q5642.0 193.0 5585.0 181.0Q5539.0 172.0 5480.0 170.0Q5463.0 170.0 5448.0 170.0Q5157.0 175.0 5157.0 353.0V364.0Q5157.0 398.0 5170.0 428.0Q5183.0 458.0 5213.5 488.5Q5244.0 519.0 5309.0 536.0Q5369.0 553.0 5452.0 554.0Q5463.0 554.0 5476.0 554.0Q5553.0 552.0 5609.0 537.0Q5674.0 520.0 5705.5 490.0Q5737.0 460.0 5750.0 430.0Q5763.0 400.0 5763.0 366.0ZM6103.0 13.0H6342.0V538.0H6872.0V712.0H6103.0ZM7182.0 13.0V711.0H6944.0V13.0ZM7809.0 0.0H7842.0Q7941.0 0.0 8022.0 13.0Q8103.0 26.0 8158.0 46.5Q8213.0 67.0 8254.0 97.0Q8295.0 127.0 8318.0 157.5Q8341.0 188.0 8355.5 223.5Q8370.0 259.0 8374.0 287.0Q8378.0 315.0 8378.0 346.0V375.0Q8378.0 405.0 8374.0 433.0Q8370.0 461.0 8355.5 497.5Q8341.0 534.0 8318.5 564.5Q8296.0 595.0 8254.5 625.5Q8213.0 656.0 8158.5 677.0Q8104.0 698.0 8022.5 711.5Q7941.0 725.0 7842.0 725.0H7809.0Q7710.0 725.0 7628.0 711.5Q7546.0 698.0 7491.5 677.0Q7437.0 656.0 7395.5 625.5Q7354.0 595.0 7331.0 564.5Q7308.0 534.0 7294.0 497.5Q7280.0 461.0 7276.0 433.0Q7272.0 405.0 7272.0 375.0V346.0Q7272.0 315.0 7276.0 287.5Q7280.0 260.0 7294.0 224.0Q7308.0 188.0 7331.0 157.5Q7354.0 127.0 7395.0 97.0Q7436.0 67.0 7491.0 46.5Q7546.0 26.0 7628.0 13.0Q7710.0 0.0 7809.0 0.0ZM8128.0 366.0V353.0Q8128.0 327.0 8120.5 303.5Q8113.0 280.0 8092.5 254.5Q8072.0 229.0 8039.5 211.0Q8007.0 193.0 7950.0 181.0Q7904.0 172.0 7845.0 170.0Q7828.0 170.0 7813.0 170.0Q7522.0 175.0 7522.0 353.0V364.0Q7522.0 398.0 7535.0 428.0Q7548.0 458.0 7578.5 488.5Q7609.0 519.0 7674.0 536.0Q7734.0 553.0 7817.0 554.0Q7828.0 554.0 7841.0 554.0Q7918.0 552.0 7974.0 537.0Q8039.0 520.0 8070.5 490.0Q8102.0 460.0 8115.0 430.0Q8128.0 400.0 8128.0 366.0Z" />
+          </svg>
+        </span>
+      </h1>
+
+      <p class="hero-subtitle">I am a product experience designer.</p>
+      </div>
+
+      <!-- 联系信息栏留在第一屏底部（设计稿如此）。Check Portfolio
+           现在指向 #work（第三屏），跟导航里的 Work 链接指向同一个
+           区块——语义上是同一件事："去看作品"，没有理由分别指向
+           两个不同的地方。设计稿上这三个字写的是 "Chick Portfolio"，
+           是笔误，这里保持代码里原有的 "Check Portfolio"，没有照抄
+           错字。 -->
+      <div class="contact-bar" id="contact">
+        <!-- 电话/微信号码不能以明文出现在 HTML 源码里——写死一个 tel: 链接
+             等于把号码原样交给任何读源码的爬虫，"点击显示"就只是骗肉眼，
+             没有实际作用。注意：连这条注释本身也不能提到真实号码，注释也
+             是源码的一部分，view-source 照样搜得到。做法：号码只存在后端
+             的环境变量 CONTACT_PHONE 里（见 server.js / .env.example），
+             按钮由 js/phone-reveal.js 在确认后端配置了号码之后才动态插入
+             ——关掉 JS 或没有后端时这一格直接不渲染，不会留一个点了没
+             反应的死按钮。点击后 POST /api/contact/phone 取回号码，把按钮
+             换成真正的 tel: 链接，并把焦点移到这个新链接上（见
+             js/phone-reveal.js 顶部注释）。 -->
+        <div class="contact-bar__phone" data-phone-slot></div>
+
+        <!-- 邮箱始终明文可点，保证关掉 JS 或者电话按钮不可用时页面上仍然
+             有一条能直接联系到人的渠道。 -->
+        <p class="contact-bar__email"><a href="mailto:tomboliu@qq.com">tomboliu@qq.com</a></p>
+
+        <a class="btn btn--outline contact-bar__cta" href="#work">
+          <svg class="btn__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"
+            focusable="false">
+            <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          Check Portfolio
+        </a>
+      </div>
+    </section>
+
+    <!-- 第二屏：占位。之前好几轮禁止给 About/Work/Contact 用真锚点，
+         理由是页面上没有对应区块；现在有了，但"有区块"不等于"区块里
+         有真内容"——这一屏目前还是空的，链接指过来看到一片空白仍然是
+         骗用户。所以这里必须有真实的 <h2> 和一句说明，标 TODO，占位
+         内容之后自己换。有标题有说明就不算空，#about 这个锚点才是
+         诚实的。 -->
+    <section class="screen screen--about" id="about" aria-labelledby="about-title">
+      <div class="screen__inner">
+        <h2 id="about-title" class="screen__title">Experience</h2>
+        <!-- TODO：职业履历内容还没定，这一段是占位，之后自己换。 -->
+        <p class="screen__placeholder">TODO — career timeline and past roles go here.</p>
+      </div>
+    </section>
+
+    <!-- 第三屏：MagicBento。挂载点是空 div，实际的卡片网格由
+         js/magic-bento-init.js 在运行时插进来（见 js/magic-bento.js）。
+         六张卡全部是占位，标题/描述里都带 TODO——见 js/magic-bento.js
+         顶部注释，字段结构复用自 _archive/removed-sections.html 里
+         归档的项目卡。 -->
+    <section class="screen screen--work" id="work" aria-labelledby="work-title">
+      <div class="screen__inner">
+        <h2 id="work-title" class="screen__title">Work</h2>
+        <div class="magic-bento-mount"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- HarmonyOS Sans 字体协议第 1 条要求"在软件里显著位置声明使用了
+       HarmonyOS Sans Fonts"，这行就是在履行这个义务，不能删、不能改
+       成注释（协议要求 prominent notice，注释不算）。挪到整页最下方
+       （第三屏之后），不再夹在第一屏里——三屏页面里 colophon 是"整个
+       网站"的署名，不专属于第一屏。 -->
+  <footer class="site-footer">
+    <p class="site-footer__colophon">
+      Set in Inter (SIL Open Font License 1.1) and HarmonyOS Sans SC
+      (HarmonyOS Sans Fonts License Agreement, &copy; Huawei Device Co., Ltd.). See <code>licenses/</code>.
+    </p>
+  </footer>
+
+  <script type="module" src="js/aero-shards-init.js"></script>
+  <script type="module" src="js/phone-reveal.js"></script>
+  <!-- GSAP 是 UMD 构建，普通 <script>（非 module）加载，挂在
+       window.gsap 上——js/magic-bento.js 读的是这个全局变量，不是
+       import，原因见该文件顶部注释。必须排在 magic-bento-init.js
+       之前。 -->
+  <script src="js/vendor/gsap.min.js"></script>
+  <script type="module" src="js/magic-bento-init.js"></script>
+</body>
+
+</html>

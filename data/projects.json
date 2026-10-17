@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Lead product designer",
+    "title": "TODO — Aperture: Defect Review Console",
+    "description": "TODO — A review console that lets quality engineers confirm or reject machine-vision defect calls in under three seconds."
+  },
+  {
+    "label": "Lead product designer",
+    "title": "TODO — Halide: Camera Calibration Flow",
+    "description": "TODO — A guided calibration flow that cut average setup time for a six-camera inspection cell from 40 minutes to 11."
+  },
+  {
+    "label": "Product designer",
+    "title": "TODO — Signal: Alert Triage for Night Shift",
+    "description": "TODO — An alert model that groups correlated machine faults so a single operator can cover 4 cells overnight."
+  },
+  {
+    "label": "Design system lead",
+    "title": "TODO — Basis: Interface Design System",
+    "description": "TODO — A design system for control-room software: dense data tables, colour that survives a factory floor, and a three-weight type scale."
+  },
+  {
+    "label": "Product designer",
+    "title": "TODO — Bench: Annotation Tooling",
+    "description": "TODO — An annotation tool designed around the reality that the people labelling defects are the people who make the parts."
+  },
+  {
+    "label": "Sole designer",
+    "title": "TODO — Origin: First Operator Interface",
+    "description": "TODO — The first shipped operator interface for a vision inspection station, built with 2 engineers in 11 weeks."
+  }
+]
